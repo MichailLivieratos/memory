@@ -55,7 +55,7 @@ for i in ids:
     train.append(tr)
     test.append(te)
 data = list(chain.from_iterable(train + test))
-
+import pdb; pdb.set_trace()
 vocab = sorted(reduce(lambda x, y: x | y, (set(list(chain.from_iterable(s)) + q + a) for s, q, a in data)))
 word_idx = dict((c, i + 1) for i, c in enumerate(vocab))
 
