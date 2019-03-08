@@ -48,10 +48,11 @@ with open(FLAGS.param_output_file, 'w') as f:
 print("Started Joint Model")
 
 # load all train/test data
+PATH = 'data/tasks_1-20_v1-2/en'
 ids = range(1, 21)
 train, test = [], []
 for i in ids:
-    tr, te = load_task(FLAGS.data_dir, i)
+    tr, te = load_task(PATH, i)
     train.append(tr)
     test.append(te)
 data = list(chain.from_iterable(train + test))
