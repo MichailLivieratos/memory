@@ -119,7 +119,7 @@ batch_size = FLAGS.batch_size
 # This avoids feeding 1 task after another, instead each batch has a random sampling of tasks
 batches = zip(range(0, n_train-batch_size, batch_size), range(batch_size, n_train, batch_size))
 batches = [(start, end) for start, end in batches]
-
+import pdb; pdb.set_trace()
 with tf.Session() as sess:
     global_step = tf.Variable(0, name="global_step", trainable=False)
     # decay learning rate
