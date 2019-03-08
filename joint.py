@@ -16,34 +16,56 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
+import torch
+from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
+                              TensorDataset)
+from torch.utils.data.distributed import DistributedSampler
+
 timestamp = str(int(time.time()))
 
 tf.flags.DEFINE_float("learning_rate", 0.001, "Learning rate for Adam Optimizer.")
+learning_rate=0.001
 tf.flags.DEFINE_float("epsilon", 0.1, "Epsilon value for Adam Optimizer.")
+epsilon=0.1
 tf.flags.DEFINE_float("l2_lambda", 0.1, "Lambda for l2 loss.")
+l2_lambda=0.1
 tf.flags.DEFINE_float("keep_prob", 1.0, "Keep probability for dropout")
+keep_prob=1.0
 tf.flags.DEFINE_float("max_grad_norm", 20.0, "Clip gradients to this norm.")
+max_grad_norm=20.0
 tf.flags.DEFINE_integer("evaluation_interval", 20, "Evaluate and print results every x epochs")
+evaluation_interval = 20
 tf.flags.DEFINE_integer("batch_size", 50, "Batch size for training.")
+batch_size=50
 tf.flags.DEFINE_integer("hops", 3, "Number of hops in the Memory Network.")
+hops=3
 tf.flags.DEFINE_integer("epochs", 200, "Number of epochs to train for.")
+epochs=200
 tf.flags.DEFINE_integer("embedding_size", 40, "Embedding size for embedding matrices.")
+embedding_size=40
 tf.flags.DEFINE_integer("memory_size", 50, "Maximum size of memory.")
+memory_size=50
 tf.flags.DEFINE_integer("random_state", None, "Random state.")
+random_state=None
 tf.flags.DEFINE_string("data_dir", "data/tasks_1-20_v1-2/en/", "Directory containing bAbI tasks")
+data_dir = data/tasks_1-20_v1-2/en/
 tf.flags.DEFINE_string("param_output_file", "logs/params_{}.csv".format(timestamp), "Name of output file for model hyperparameters")
+param_output_file=logs/params_{}.csv".format(timestamp)
 tf.flags.DEFINE_string("output_file", "logs/scores_{}.csv".format(timestamp), "Name of output file for final bAbI accuracy scores.")
+output_file = logs/scores_{}.csv".format(timestamp)
 tf.flags.DEFINE_integer("feature_size", 50, "Feature size")
+feature_size=50
 tf.flags.DEFINE_string("reader", "bow", "Reader for the model")
+reader='bow'
 FLAGS = tf.flags.FLAGS
 
-print("\nParameters:")
-with open(FLAGS.param_output_file, 'w') as f:
-    for attr, value in sorted(FLAGS.__flags.items()):
-        line = "{}={}".format(attr.upper(), value)
-        f.write(line + '\n')
-        print(line)
-    print("")
+#print("\nParameters:")
+#with open(FLAGS.param_output_file, 'w') as f:
+#    for attr, value in sorted(FLAGS.__flags.items()):
+#        line = "{}={}".format(attr.upper(), value)
+#        f.write(line + '\n')
+#        print(line)
+#    print("")
 
 print("Started Joint Model")
 
@@ -115,12 +137,26 @@ test_labels = np.argmax(testA, axis=1)
 val_labels = np.argmax(valA, axis=1)
 
 tf.set_random_seed(FLAGS.random_state)
+torch.manual_seed(random_state)
 batch_size = FLAGS.batch_size
+batch_size = batch_size
 
 # This avoids feeding 1 task after another, instead each batch has a random sampling of tasks
 batches = zip(range(0, n_train-batch_size, batch_size), range(batch_size, n_train, batch_size))
 batches = [(start, end) for start, end in batches]
 import pdb; pdb.set_trace()
+
+
+optimier = torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.96, last_epoch=-1)#up to 9000
+#scheduler.step()
+
+optimizer.zero_grad()
+loss_fn(model(input), target).backward()
+optimizer.step()
+
+
+
 with tf.Session() as sess:
     global_step = tf.Variable(0, name="global_step", trainable=False)
     # decay learning rate
